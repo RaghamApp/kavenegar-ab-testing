@@ -24,10 +24,10 @@ export class ABRouter {
 
   getNext(): Route {
     const route = this.order[this.next];
+    this.next++;
+
     if (this.next === this.orderLength) {
       this.next = 0;
-    } else {
-      this.next++;
     }
 
     return route;
