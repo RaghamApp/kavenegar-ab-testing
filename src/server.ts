@@ -1,4 +1,5 @@
 import { http } from "../deps.ts";
+import { multiParser } from "https://github.com/erfanium/multiparser/raw/patch-1/mod.ts";
 
 export interface HandlerFn<T> {
   (req: http.ServerRequest, body: T): Promise<any>;
@@ -6,12 +7,8 @@ export interface HandlerFn<T> {
 
 const decoder = new TextDecoder("utf-8");
 
-async function parseBody(req: http.ServerRequest): Promise<unknown> {
-  const b = await Deno.readAll(req.body);
-  const raw = decoder.decode(b);
-  return JSON.parse(raw);
-}
-
+const headers = new Headers();
+headers.set("Content-Type", "application/json; charset=utf-8");
 export class Server {
   handler!: HandlerFn<any>;
   constructor(port: number) {
@@ -20,8 +17,8 @@ export class Server {
         return req.respond({ status: 405 });
       }
 
-      const body = await parseBody(req).catch((e) => {
-        req.respond({ body: "BAD_JSON", status: 400 });
+      const body = await multiParser(req).catch((e) => {
+        req.respond({ body: "BAD_BODY", status: 400 });
         console.error(e);
       });
 
@@ -34,7 +31,11 @@ export class Server {
 
       if (!result) return;
 
-      req.respond({ status: 200, body: JSON.stringify(result) });
+      req.respond({
+        status: 200,
+        body: JSON.stringify(result),
+        headers,
+      });
     });
 
     console.log(`Start listening in port ${port}`);
