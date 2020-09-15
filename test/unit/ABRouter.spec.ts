@@ -28,7 +28,7 @@ Deno.test(
       "test-3": 1.5,
     };
     assertThrows(() => new ABRouter(routes));
-  }
+  },
 );
 
 Deno.test("[unit] ABRouter.prototype.getNext should return next route", () => {
